@@ -1,23 +1,30 @@
 package network
 
 import "net"
+import "bufio"
 
 type session struct {
-	Conn net.Conn
-
+	Conn       net.Conn
 	WriteChann chan []byte
 }
 
 func NewSession(conn net.Conn) (session, error) {
 	sess := &session{
-		Conn: conn,
+		Conn:       conn,
+		WriteChann: make(chan []byte, 128),
 	}
+
+	go sendLoop()
+
 	return sess, nil
 }
 
 func (self *session) Run() {
-
-	go sendLoop()
+	bufReader := bufio.NewReader(self.Conn)
+	for {
+		// handler messages
+		_ = bufReader
+	}
 }
 
 func (self *session) sendLoop() {

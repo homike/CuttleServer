@@ -35,10 +35,15 @@ func (self *Acceptor) Accept() error {
 }
 
 func (self *Acceptor) OnAccept(conn net.Conn) error {
+	defer conn.Close()
 
 	sess, err := NewSession(conn)
 	if err != nil {
 		return err
 	}
 
+	// recv messages, dispatch handler
+	sess.Run()
+
+	return nil
 }
