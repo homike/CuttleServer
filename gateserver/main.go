@@ -5,7 +5,12 @@ import (
 )
 
 func main() {
-	gateServer, err := service.NewGate()
+	gateServer := &service.Gate{
+		Addr:       "127.0.0.1",
+		Port:       6370,
+		IsLittle:   true,
+		MsgHeadLen: 6,
+	}
 
-	acceptor.Start()
+	gateServer.Run()
 }

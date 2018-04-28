@@ -1,8 +1,10 @@
 package msghandler
 
 import (
-	"cuttleserver/gateserver/common/cproto"
+	"cuttleserver/common/network/cproto"
+	"cuttleserver/gateserver/session"
 	"fmt"
+	"reflect"
 )
 
 //func Dispatch(msgID uint16, msgBody []byte, tc *network.TCPClient) {
@@ -19,14 +21,13 @@ import (
 //}
 
 func NewMsgProcessor() (*cproto.CProto, error) {
-	proto := New(cproto.CProto)
+	proto := cproto.NewCProto()
 
-	proto.SetHandler(1, cproto.MsgInfo{MsgType: LoginServerPlatformReq, MsgHandler: ProcessLoginServerPlatformReq})
+	proto.SetHandler(1, cproto.MsgInfo{MsgType: reflect.TypeOf(LoginServerPlatformReq{}), MsgHandler: ProcessLoginServerPlatformReq})
 
 	return proto, nil
 }
 
-// 1
 type LoginServerPlatformReq struct {
 	Takon     string
 	Version   int32
@@ -34,9 +35,8 @@ type LoginServerPlatformReq struct {
 }
 
 func ProcessLoginServerPlatformReq(args []interface{}) {
-
 	msg := args[0].(LoginServerPlatformReq)
-	//sess := args[1].(
+	sess := args[1].(session.Session)
 
-	fmt.Println("args ", msg)
+	fmt.Println("args ", msg, sess.Token)
 }

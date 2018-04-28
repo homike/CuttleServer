@@ -1,33 +1,41 @@
 package service
 
 import (
-	"cuttleserver/common/network/"
-	"cuttleserver/common/network/cproto"
+	"cuttleserver/common/network"
+	"cuttleserver/gateserver/msghandler"
+	"cuttleserver/gateserver/session"
 )
 
 type Gate struct {
-	Acceptor  *network.Acceptor
-	Parser    *network.Parser
-	Processor network.Processor
-}
+	Addr       string
+	Port       int
+	IsLittle   bool
+	MsgHeadLen int
 
-func NewGate() (*Gate, error) {
-	gate := New(Gate)
-
-	parser := network.NewMsgParser(6, true)
-	proc := New(cproto.CProto)
-	acceptor, err := network.NewAcceptor("127.0.0.1", 6370, parser, proc)
-	if err != nil {
-		return nil, err
-	}
-
-	gate.Parser = parser
-	gate.Processor = proc
-	gate.Acceptor = acceptor
-
-	return gate, nil
+	Acceptor *network.Acceptor
 }
 
 func (self *Gate) Run() error {
-	self.Acceptor.Run()
+
+	parser := network.NewMsgParser(self.MsgHeadLen, self.IsLittle)
+	cprotoProc, err := msghandler.NewMsgProcessor()
+	if err != nil {
+		return err
+	}
+	proc := interface{}(cprotoProc).(network.MsgProcessor)
+
+	// Acceptor
+	acceptor, err := network.NewAcceptor(self.Addr, self.Port, parser, proc)
+	if err != nil {
+		return err
+	}
+
+	acceptor.NewSession = func(socketSession *network.SocketSession) network.Session {
+		sess := &session.Session{SocketSession: socketSession}
+		return sess
+	}
+
+	acceptor.Start()
+
+	return nil
 }

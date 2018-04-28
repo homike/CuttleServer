@@ -19,6 +19,12 @@ type MsgInfo struct {
 	MsgHandler MsgHandler
 }
 
+func NewCProto() *CProto {
+	return &CProto{
+		mapHandlers: make(map[uint16]MsgInfo),
+	}
+}
+
 func (self *CProto) SetHandler(msgID uint16, msgInfo MsgInfo) error {
 	_, ok := self.mapHandlers[msgID]
 	if ok {
@@ -29,7 +35,7 @@ func (self *CProto) SetHandler(msgID uint16, msgInfo MsgInfo) error {
 	return nil
 }
 
-func (self *CProto) Route(msgID int16, msgBody []byte, userdata interface{}) error {
+func (self *CProto) Route(msgID uint16, msgBody []byte, userdata interface{}) error {
 	msgInfo, ok := self.mapHandlers[msgID]
 	if !ok {
 		return errors.New("not exist handler")
@@ -52,7 +58,7 @@ func (self *CProto) Route(msgID int16, msgBody []byte, userdata interface{}) err
 func (p *CProto) UnMarshal(msgBody []byte, msgStruct interface{}) error {
 
 	readIndex := 0
-	v := reflect.ValueOf(msgStruct).Elem(i)
+	v := reflect.ValueOf(msgStruct).Elem()
 	//vType := v.Type()
 	for i := 0; i < v.NumField(); i++ {
 		vf := v.Field(i)
