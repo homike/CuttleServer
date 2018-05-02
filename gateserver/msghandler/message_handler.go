@@ -20,23 +20,30 @@ import (
 //	}
 //}
 
+const (
+	Protocol_Test_Req                = 1
+	Protocol_Test_Resp               = 2
+	Protocol_GetSystemTime_Req       = 3
+	Protocol_GetSystemTime_Resp      = 4
+	Protocol_LoginServerResult_Ntf   = 1001
+	Protocol_LoginServerPlatform_Req = 1007
+)
+
+type TestReq struct {
+	Value int32
+}
+
 func NewMsgProcessor() (*cproto.CProto, error) {
 	proto := cproto.NewCProto()
 
-	proto.SetHandler(1, cproto.MsgInfo{MsgType: reflect.TypeOf(LoginServerPlatformReq{}), MsgHandler: ProcessLoginServerPlatformReq})
+	proto.SetHandler(1, cproto.MsgInfo{MsgType: reflect.TypeOf(&TestReq{}), MsgHandler: TestReqProcess})
 
 	return proto, nil
 }
 
-type LoginServerPlatformReq struct {
-	Takon     string
-	Version   int32
-	ChannelID string
-}
+func TestReqProcess(args []interface{}) {
+	msg := args[0].(*TestReq)
+	sess := args[1].(*session.Session)
 
-func ProcessLoginServerPlatformReq(args []interface{}) {
-	msg := args[0].(LoginServerPlatformReq)
-	sess := args[1].(session.Session)
-
-	fmt.Println("args ", msg, sess.Token)
+	fmt.Println("args ", msg.Value, "Token", sess.Token)
 }

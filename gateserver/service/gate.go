@@ -4,6 +4,7 @@ import (
 	"cuttleserver/common/network"
 	"cuttleserver/gateserver/msghandler"
 	"cuttleserver/gateserver/session"
+	"fmt"
 )
 
 type Gate struct {
@@ -24,7 +25,7 @@ func (self *Gate) Run() error {
 	}
 	proc := interface{}(cprotoProc).(network.MsgProcessor)
 
-	// Acceptor
+	// Create Acceptor
 	acceptor, err := network.NewAcceptor(self.Addr, self.Port, parser, proc)
 	if err != nil {
 		return err
@@ -35,6 +36,7 @@ func (self *Gate) Run() error {
 		return sess
 	}
 
+	fmt.Println("[GateServer] Start, Listen", self.Addr, self.Port)
 	acceptor.Start()
 
 	return nil

@@ -66,6 +66,8 @@ func (self *Acceptor) OnAccept(conn net.Conn) error {
 	if self.NewSession == nil {
 		return errors.New("Acceptor NewSession function is nil")
 	}
+
+	// new user session, who impl Session interface
 	sess := self.NewSession(socketSession)
 
 	// recv messages, dispatch handler

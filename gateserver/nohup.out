@@ -1,0 +1,46 @@
+[GateServer] Start, Listen 127.0.0.1 9110
+panic: interface conversion: interface {} is reflect.Value, not *msghandler.LoginServerPlatformReq
+
+goroutine 22 [running]:
+cuttleserver/gateserver/msghandler.ProcessLoginServerPlatformReq(0xc4200861e0, 0x2, 0x2)
+	/home/moyu/golang/src/cuttleserver/gateserver/msghandler/message_handler.go:38 +0x1b9
+cuttleserver/common/network/cproto.(*CProto).Route(0xc42000e030, 0xc420090001, 0xc42009e030, 0x4, 0x4, 0x4d6d80, 0xc420086180, 0x0, 0x0)
+	/home/moyu/golang/src/cuttleserver/common/network/cproto/cproto.go:52 +0x245
+cuttleserver/gateserver/session.(*Session).Run(0xc420086180)
+	/home/moyu/golang/src/cuttleserver/gateserver/session/session.go:24 +0x128
+cuttleserver/common/network.(*Acceptor).OnAccept(0xc420054140, 0x5670a0, 0xc42008c020, 0x0, 0x0)
+	/home/moyu/golang/src/cuttleserver/common/network/acceptor.go:74 +0x14f
+created by cuttleserver/common/network.(*Acceptor).Accept
+	/home/moyu/golang/src/cuttleserver/common/network/acceptor.go:55 +0x87
+[GateServer] Start, Listen 127.0.0.1 9110
+panic: reflect: call of reflect.Value.Elem on struct Value
+
+goroutine 24 [running]:
+reflect.Value.Elem(0x4f3c80, 0xc420086240, 0x99, 0xc420086240, 0x99, 0x0)
+	/usr/lib/golang/src/reflect/value.go:752 +0x123
+cuttleserver/common/network/cproto.(*CProto).UnMarshal(0xc42000e030, 0xc42009e090, 0x4, 0x4, 0x4f3c80, 0xc420086240, 0xc42009e080, 0xc42009e040)
+	/home/moyu/golang/src/cuttleserver/common/network/cproto/cproto.go:61 +0x6f
+cuttleserver/common/network/cproto.(*CProto).Route(0xc42000e030, 0xc420090001, 0xc42009e090, 0x4, 0x4, 0x4d6d80, 0xc4200861e0, 0x0, 0x0)
+	/home/moyu/golang/src/cuttleserver/common/network/cproto/cproto.go:46 +0x16b
+cuttleserver/gateserver/session.(*Session).Run(0xc4200861e0)
+	/home/moyu/golang/src/cuttleserver/gateserver/session/session.go:24 +0x128
+cuttleserver/common/network.(*Acceptor).OnAccept(0xc420054140, 0x5670a0, 0xc42008c020, 0x0, 0x0)
+	/home/moyu/golang/src/cuttleserver/common/network/acceptor.go:74 +0x14f
+created by cuttleserver/common/network.(*Acceptor).Accept
+	/home/moyu/golang/src/cuttleserver/common/network/acceptor.go:55 +0x87
+[GateServer] Start, Listen 127.0.0.1 9110
+args  &{10} 
+args  &{10} 
+args  &{10} 
+args  &{10} 
+args  &{10} 
+2018/05/02 16:04:25 read headsize error
+message read error
+2018/05/02 16:04:25 read headsize error
+message read error
+2018/05/02 16:04:25 read headsize error
+message read error
+2018/05/02 16:04:25 read headsize error
+message read error
+2018/05/02 16:04:25 read headsize error
+message read error

@@ -8,6 +8,12 @@ import (
 	"reflect"
 )
 
+const (
+	CPROTORET_OK int8 = iota
+	CPROTORET_NO_HANDLER
+	CPROTORET_MSG_FORMAT_ERROR
+)
+
 type CProto struct {
 	mapHandlers map[uint16]MsgInfo
 }
@@ -35,23 +41,26 @@ func (self *CProto) SetHandler(msgID uint16, msgInfo MsgInfo) error {
 	return nil
 }
 
-func (self *CProto) Route(msgID uint16, msgBody []byte, userdata interface{}) error {
+func (self *CProto) Route(msgID uint16, msgBody []byte, userData interface{}) int8 {
+
 	msgInfo, ok := self.mapHandlers[msgID]
 	if !ok {
-		return errors.New("not exist handler")
+		return CPROTORET_NO_HANDLER
 	}
 
-	// UnMarshal
-	msgEntry := reflect.New(msgInfo.MsgType.Elem())
+	// instantiation struct
+	msgEntry := reflect.New(msgInfo.MsgType.Elem()).Interface()
+
+	// unmarshal
 	err := self.UnMarshal(msgBody, msgEntry)
 	if err != nil {
-		return err
+		return CPROTORET_MSG_FORMAT_ERROR
 	}
 
-	// Route
-	msgInfo.MsgHandler([]interface{}{userdata, msgEntry})
+	// dispatch message
+	msgInfo.MsgHandler([]interface{}{msgEntry, userData})
 
-	return nil
+	return CPROTORET_OK
 }
 
 // Gorutine safe
