@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type SessionConnectStatus int8
+type SessionConnectStatus int32
 
 const (
 	Connect_init           SessionConnectStatus = 0x1 << 0
@@ -26,6 +26,7 @@ type Session struct {
 
 func (self *Session) Run() {
 	self.ConnStatus = Connect_init
+
 	bufReader := bufio.NewReader(self.SocketSession.Conn)
 	for {
 		// handler messages

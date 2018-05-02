@@ -15,7 +15,6 @@ type SocketSession struct {
 
 	MsgParser    *MsgParser
 	MsgProcessor MsgProcessor
-	// User Data
 }
 
 func NewSocketSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*SocketSession, error) {
