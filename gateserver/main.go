@@ -2,6 +2,7 @@ package main
 
 import (
 	"cuttleserver/gateserver/service"
+	"fmt"
 )
 
 func main() {
@@ -15,5 +16,6 @@ func main() {
 	gateServer.Run()
 
 	for {
+		fmt.Println("fadfadf")
 	}
 }
