@@ -4,23 +4,23 @@ import (
 	"net"
 )
 
-type Session interface {
+type Agent interface {
 	Run()
 	OnClose()
 }
 
-type SocketSession struct {
-	Conn       net.Conn
-	WriteChann chan []byte
+type Session struct {
+	Conn      net.Conn
+	WriteChan chan []byte
 
 	MsgParser    *MsgParser
 	MsgProcessor MsgProcessor
 }
 
-func NewSocketSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*SocketSession, error) {
-	sess := &SocketSession{
+func NewSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*Session, error) {
+	sess := &Session{
 		Conn:         conn,
-		WriteChann:   make(chan []byte, 128),
+		WriteChan:    make(chan []byte, 128),
 		MsgParser:    parser,
 		MsgProcessor: proc,
 	}
@@ -43,8 +43,8 @@ func NewSocketSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*Soc
 //	}
 //}
 
-func (self *SocketSession) sendLoop() {
-	for b := range self.WriteChann {
+func (self *Session) sendLoop() {
+	for b := range self.WriteChan {
 		if b == nil {
 			break
 		}
@@ -54,4 +54,18 @@ func (self *SocketSession) sendLoop() {
 			break
 		}
 	}
+}
+
+func (self *Session) Write(msgid uint16, message interface{}) error {
+	byteMessage, err := self.MsgProcessor.Marshal(message)
+	if err != nil {
+		return err
+	}
+	data, err := self.MsgParser.Pack(msgid, byteMessage)
+	if err != nil {
+		return err
+	}
+
+	self.WriteChan <- data
+	return nil
 }

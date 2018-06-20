@@ -2,8 +2,8 @@ package service
 
 import (
 	"cuttleserver/common/network"
+	"cuttleserver/gateserver/agent"
 	"cuttleserver/gateserver/msghandler"
-	"cuttleserver/gateserver/session"
 	"fmt"
 )
 
@@ -16,28 +16,34 @@ type Gate struct {
 	Acceptor *network.Acceptor
 }
 
-func (self *Gate) Run() error {
+func (self *Gate) Run(close chan bool) error {
 
+	agent.InitAgentManager()
+
+	// parser
 	parser := network.NewMsgParser(self.MsgHeadLen, self.IsLittle)
+
+	// processor
 	cprotoProc, err := msghandler.NewMsgProcessor()
 	if err != nil {
 		return err
 	}
-	proc := interface{}(cprotoProc).(network.MsgProcessor)
+	proc := network.MsgProcessor(cprotoProc)
 
-	// Create Acceptor
+	// acceptor
 	acceptor, err := network.NewAcceptor(self.Addr, self.Port, parser, proc)
 	if err != nil {
 		return err
 	}
-
-	acceptor.NewSession = func(socketSession *network.SocketSession) network.Session {
-		sess := &session.Session{SocketSession: socketSession}
-		return sess
+	acceptor.NewAgent = func(sess *network.Session) network.Agent {
+		agent := &agent.Agent{Session: sess}
+		return agent
 	}
-
 	fmt.Println("[GateServer] Start, Listen", self.Addr, self.Port)
 	acceptor.Start()
+
+	<-close
+	fmt.Println("[GateServer] Close")
 
 	return nil
 }

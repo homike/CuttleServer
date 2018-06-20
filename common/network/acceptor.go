@@ -13,7 +13,7 @@ type Acceptor struct {
 	MsgParser    *MsgParser
 	MsgProcessor MsgProcessor
 	// Output interface
-	NewSession func(sess *SocketSession) Session
+	NewAgent func(sess *Session) Agent
 }
 
 func NewAcceptor(addr string, port int, p *MsgParser, proc MsgProcessor) (*Acceptor, error) {
@@ -59,19 +59,19 @@ func (self *Acceptor) Accept() error {
 func (self *Acceptor) OnAccept(conn net.Conn) error {
 	defer conn.Close()
 
-	socketSession, err := NewSocketSession(conn, self.MsgParser, self.MsgProcessor)
+	sess, err := NewSession(conn, self.MsgParser, self.MsgProcessor)
 	if err != nil {
 		return err
 	}
-	if self.NewSession == nil {
+	if self.NewAgent == nil {
 		return errors.New("Acceptor NewSession function is nil")
 	}
 
-	// new user session, who impl Session interface
-	sess := self.NewSession(socketSession)
+	// new agent, who impl agent interface
+	agent := self.NewAgent(sess)
 
 	// recv messages, dispatch handler
-	sess.Run()
+	agent.Run()
 
 	return nil
 }
