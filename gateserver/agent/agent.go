@@ -27,7 +27,7 @@ type Agent struct {
 func (self *Agent) Run() {
 	self.ConnStatus = Connect_init
 
-	bufReader := bufio.NewReader(self.Session.Conn)
+	bufReader := bufio.NewReaderSize(self.Session.Conn, 40960)
 	for {
 		// handler messages
 		msgID, msgBody, err := self.Session.MsgParser.UnPack(bufReader)
@@ -36,17 +36,18 @@ func (self *Agent) Run() {
 			return
 		}
 		ret := self.Session.MsgProcessor.Route(msgID, msgBody, interface{}(self))
-		InrcRequestCount()
 		if ret == cproto.CPROTORET_NO_HANDLER {
 			// czxdo: forward to gameserver
 		} else if ret != cproto.CPROTORET_OK {
 			fmt.Println("message route error")
 		}
+		// inrc qps count
+		InrcRequestCount()
 	}
 }
 
 func (self *Agent) Send(msgid uint16, message interface{}) error {
-	self.Session.Write(msgid, message)
+	self.Session.WriteMessage(msgid, message)
 	return nil
 }
 

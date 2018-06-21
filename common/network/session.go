@@ -4,11 +4,6 @@ import (
 	"net"
 )
 
-type Agent interface {
-	Run()
-	OnClose()
-}
-
 type Session struct {
 	Conn      net.Conn
 	WriteChan chan []byte
@@ -30,19 +25,6 @@ func NewSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*Session, 
 	return sess, nil
 }
 
-//func (self *SocketSession) RecvLoop() {
-//	bufReader := bufio.NewReader(self.Conn)
-//	for {
-//		// handler messages
-//		msgID, msgBody, err := self.MsgParser.UnPack(bufReader)
-//		if err != nil {
-//			fmt.Println("message read error")
-//			return
-//		}
-//		self.MsgProcessor.Route(msgID, msgBody, interface{}(self))
-//	}
-//}
-
 func (self *Session) sendLoop() {
 	for b := range self.WriteChan {
 		if b == nil {
@@ -56,11 +38,21 @@ func (self *Session) sendLoop() {
 	}
 }
 
-func (self *Session) Write(msgid uint16, message interface{}) error {
+func (self *Session) WriteMessage(msgid uint16, message interface{}) error {
 	byteMessage, err := self.MsgProcessor.Marshal(message)
 	if err != nil {
 		return err
 	}
+	data, err := self.MsgParser.Pack(msgid, byteMessage)
+	if err != nil {
+		return err
+	}
+
+	self.WriteChan <- data
+	return nil
+}
+
+func (self *Session) WriteBytes(msgid uint16, byteMessage []byte) error {
 	data, err := self.MsgParser.Pack(msgid, byteMessage)
 	if err != nil {
 		return err
