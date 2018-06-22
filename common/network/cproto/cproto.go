@@ -63,7 +63,7 @@ func (self *CProto) Route(msgID uint16, msgBody []byte, userData interface{}) in
 	return CPROTORET_OK
 }
 
-// Gorutine safe
+// gorutine safe
 func (p *CProto) UnMarshal(msgBody []byte, msgStruct interface{}) error {
 
 	readIndex := 0
@@ -100,7 +100,7 @@ func (p *CProto) UnMarshal(msgBody []byte, msgStruct interface{}) error {
 	return nil
 }
 
-// Gorutine safe
+// gorutine safe
 func (self *CProto) Marshal(msgStruct interface{}) ([]byte, error) {
 
 	bytesBuffer := bytes.NewBuffer([]byte{})

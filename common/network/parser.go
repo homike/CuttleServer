@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 )
 
 // --------------
@@ -33,7 +32,6 @@ func (self *MsgParser) UnPack(bufReader *bufio.Reader) (uint16, []byte, error) {
 		err = binary.Read(bufReader, binary.BigEndian, &headerSize)
 	}
 	if err != nil {
-		log.Println("read headsize error")
 		return 0, nil, err
 	}
 
@@ -45,7 +43,6 @@ func (self *MsgParser) UnPack(bufReader *bufio.Reader) (uint16, []byte, error) {
 		err = binary.Read(bufReader, binary.BigEndian, &msgID)
 	}
 	if err != nil {
-		log.Println("read msgid error")
 		return 0, nil, err
 	}
 
@@ -59,7 +56,6 @@ func (self *MsgParser) UnPack(bufReader *bufio.Reader) (uint16, []byte, error) {
 		err = binary.Read(bufReader, binary.BigEndian, &bodyData)
 	}
 	if err != nil {
-		log.Println("read body error")
 		return 0, nil, err
 	}
 

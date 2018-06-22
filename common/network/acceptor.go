@@ -12,6 +12,8 @@ type Acceptor struct {
 	Listener     net.Listener
 	MsgParser    *MsgParser
 	MsgProcessor MsgProcessor
+
+	SocketOption
 	// Output interface
 	NewAgent func(sess *Session) Agent
 }
@@ -67,10 +69,8 @@ func (self *Acceptor) OnAccept(conn net.Conn) error {
 		return errors.New("Acceptor NewSession function is nil")
 	}
 
-	// new agent, who impl agent interface
 	agent := self.NewAgent(sess)
 
-	// recv messages, dispatch handler
 	agent.Run()
 
 	return nil

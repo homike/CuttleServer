@@ -38,6 +38,24 @@ func (self *Session) sendLoop() {
 	}
 }
 
+//func (self *Session) recvLoop() {
+//	for self.Conn != nil {
+//		msg, err := self.ReadMessage(self)
+//
+//		if err != nil {
+//			if !util.IsEOFOrNetReadError(err) {
+//				log.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
+//			}
+//
+//			self.Close()
+//
+//			break
+//		}
+//	}
+//
+//	self.cleanup()
+//}
+
 func (self *Session) WriteMessage(msgid uint16, message interface{}) error {
 	byteMessage, err := self.MsgProcessor.Marshal(message)
 	if err != nil {
