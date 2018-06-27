@@ -1,8 +1,20 @@
 package network
 
 import (
+	"io"
 	"net"
 )
+
+type SessionInterface interface {
+	OnEstablish()
+	OnTerminate()
+	OnError(err error)
+	OnRecv(msgid uint16, msgdata []byte)
+
+	ConnectAvailable() bool
+	ReadMessage() (uint16, []byte, error)
+	Close()
+}
 
 type Session struct {
 	Conn      net.Conn
@@ -38,24 +50,6 @@ func (self *Session) sendLoop() {
 	}
 }
 
-//func (self *Session) recvLoop() {
-//	for self.Conn != nil {
-//		msg, err := self.ReadMessage(self)
-//
-//		if err != nil {
-//			if !util.IsEOFOrNetReadError(err) {
-//				log.Errorf("session closed, sesid: %d, err: %s", self.ID(), err)
-//			}
-//
-//			self.Close()
-//
-//			break
-//		}
-//	}
-//
-//	self.cleanup()
-//}
-
 func (self *Session) WriteMessage(msgid uint16, message interface{}) error {
 	byteMessage, err := self.MsgProcessor.Marshal(message)
 	if err != nil {
@@ -78,4 +72,28 @@ func (self *Session) WriteBytes(msgid uint16, byteMessage []byte) error {
 
 	self.WriteChan <- data
 	return nil
+}
+
+func (self *Session) ConnectAvailable() bool {
+	return self.Conn != nil
+}
+
+func (self *Session) ReadMessage() (uint16, []byte, error) {
+	return self.MsgParser.UnPack((self.Conn).(io.Reader))
+}
+
+func (self *Session) Close() {
+	self.Conn.Close()
+}
+
+func (self *Session) OnEstablish() {
+}
+
+func (self *Session) OnTerminate() {
+}
+
+func (self *Session) OnError(err error) {
+}
+
+func (self *Session) OnRecv(msgid uint16, msgdata []byte) {
 }

@@ -3,6 +3,7 @@ package network
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -12,10 +13,10 @@ type Acceptor struct {
 	Listener     net.Listener
 	MsgParser    *MsgParser
 	MsgProcessor MsgProcessor
-
 	SocketOption
-	// Output interface
-	NewAgent func(sess *Session) Agent
+
+	// constructor
+	NewAgent func(sess *Session) SessionInterface
 }
 
 func NewAcceptor(addr string, port int, p *MsgParser, proc MsgProcessor) (*Acceptor, error) {
@@ -32,7 +33,6 @@ func NewAcceptor(addr string, port int, p *MsgParser, proc MsgProcessor) (*Accep
 }
 
 func (self *Acceptor) Start() error {
-	// Socket Listen
 	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(self.IP), self.Port, ""})
 	if err != nil {
 		fmt.Println("Listen failed", err.Error())
@@ -65,13 +65,35 @@ func (self *Acceptor) OnAccept(conn net.Conn) error {
 	if err != nil {
 		return err
 	}
+
 	if self.NewAgent == nil {
 		return errors.New("Acceptor NewSession function is nil")
 	}
-
 	agent := self.NewAgent(sess)
 
-	agent.Run()
+	self.Run(agent)
 
 	return nil
+}
+
+func isEOFOrNetReadError(err error) bool {
+	if err == io.EOF {
+		return true
+	}
+	ne, ok := err.(*net.OpError)
+	return ok && ne.Op == "read"
+}
+
+func (self *Acceptor) Run(sess SessionInterface) {
+	for sess.ConnectAvailable() {
+		msgid, msgdata, err := sess.ReadMessage()
+		if err != nil {
+			if !isEOFOrNetReadError(err) {
+				fmt.Sprintf("session closed, err: %s \n", err)
+			}
+			sess.Close()
+			break
+		}
+		sess.OnRecv(msgid, msgdata)
+	}
 }

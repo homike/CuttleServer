@@ -17,7 +17,6 @@ type Gate struct {
 }
 
 func (self *Gate) Run(close chan bool) error {
-
 	agent.InitAgentManager()
 
 	// parser
@@ -35,8 +34,8 @@ func (self *Gate) Run(close chan bool) error {
 	if err != nil {
 		return err
 	}
-	acceptor.NewAgent = func(sess *network.Session) network.Agent {
-		agent := &agent.Agent{Session: sess}
+	acceptor.NewAgent = func(sess *network.Session) network.SessionInterface {
+		agent := &agent.Agent{Session: *sess}
 		return agent
 	}
 	fmt.Println("[GateServer] Start, Listen", self.Addr, self.Port)

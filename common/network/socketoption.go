@@ -10,11 +10,11 @@ type SocketOption struct {
 
 func (self *SocketOption) SetSocketOption(readSize, writeSize int, noDelay bool) {
 	self.readBufferSize = readSize
-	self.writeBufferSize = writeBufferSize
+	self.writeBufferSize = writeSize
 	self.noDelay = noDelay
 }
 
-func (self *SocketOption) ApplySocketOption(conn *net.Conn) {
+func (self *SocketOption) ApplySocketOption(conn net.Conn) {
 	if tcp, ok := conn.(*net.TCPConn); ok {
 		if self.readBufferSize > 0 {
 			tcp.SetReadBuffer(self.readBufferSize)

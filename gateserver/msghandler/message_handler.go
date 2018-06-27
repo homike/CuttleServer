@@ -38,5 +38,5 @@ func TestReqProcess(args []interface{}) {
 		Value: req.Value + 1,
 	}
 	agent.Send(Protocol_Pong, resp)
-	//fmt.Println("args ", msg.Value, "Token", agent.Token)
+	//fmt.Println("args ", req.Value, "Token", agent.Token)
 }
