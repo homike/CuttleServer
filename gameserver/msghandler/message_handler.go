@@ -2,7 +2,7 @@ package msghandler
 
 import (
 	"cuttleserver/common/network"
-	"cuttleserver/gateserver/service"
+	"cuttleserver/gameserver/service"
 	"fmt"
 	"reflect"
 )
@@ -37,8 +37,9 @@ func TestReqProcess(args []interface{}) (uint16, interface{}) {
 		Value: req.Value + 1,
 	}
 
-	sess.Send(Protocol_Pong, resp)
+	_ = sess
+	//sess.Send(Protocol_Pong, resp)
 	fmt.Println("req", req.Value)
 
-	return 0, nil
+	return uint16(Protocol_Pong), resp
 }

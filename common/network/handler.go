@@ -1,4 +1,4 @@
-package service
+package network
 
 import (
 	"cuttleserver/common/network/cproto"
@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-type MsgHandler func([]interface{})
+type MsgHandler func([]interface{}) (uint16, interface{})
 type MsgInfo struct {
 	MsgType    reflect.Type
 	MsgHandler MsgHandler
@@ -14,26 +14,28 @@ type MsgInfo struct {
 
 type MessageHandlers struct {
 	Handlers map[uint16]MsgInfo
+	Proc     MsgProcessor
 }
 
-func NewMessageHandlers() *MessageHandlers {
+func NewMessageHandlers(proc MsgProcessor) *MessageHandlers {
 	return &MessageHandlers{
 		Handlers: make(map[uint16]MsgInfo),
+		Proc:     proc,
 	}
 }
 
-func RegisterHandler(msgID uint16, msgInfo MsgInfo) error {
-	_, ok := messageHandlers.Handlers[msgID]
+func (self *MessageHandlers) RegisterHandler(msgID uint16, msgInfo MsgInfo) error {
+	_, ok := self.Handlers[msgID]
 	if ok {
 		return errors.New("exist handler")
 	}
-	messageHandlers.Handlers[msgID] = msgInfo
+	self.Handlers[msgID] = msgInfo
 
 	return nil
 }
 
-func DispatchMessage(msgID uint16, msgBody []byte, userData interface{}) int8 {
-	msgInfo, ok := messageHandlers.Handlers[msgID]
+func (self *MessageHandlers) DispatchMessage(msgID uint16, msgBody []byte, userData interface{}) int8 {
+	msgInfo, ok := self.Handlers[msgID]
 	if !ok {
 		return cproto.CPROTORET_NO_HANDLER
 	}
@@ -42,7 +44,7 @@ func DispatchMessage(msgID uint16, msgBody []byte, userData interface{}) int8 {
 	msgEntry := reflect.New(msgInfo.MsgType.Elem()).Interface()
 
 	// unmarshal
-	err := proc.UnMarshal(msgBody, msgEntry)
+	err := self.Proc.UnMarshal(msgBody, msgEntry)
 	if err != nil {
 		return cproto.CPROTORET_MSG_FORMAT_ERROR
 	}

@@ -15,16 +15,13 @@ type Gate struct {
 	Acceptor *network.Acceptor
 }
 
-var messageHandlers *MessageHandlers
-var proc network.MsgProcessor
+var MessageHandlers *network.MessageHandlers
 var gateServer *Gate
 var gameServer1 *GameServer
 var sessionManager *SessionManager
 
 func Init() {
-	messageHandlers = NewMessageHandlers()
-
-	proc = network.MsgProcessor(cproto.NewCProto())
+	MessageHandlers = network.NewMessageHandlers(network.MsgProcessor(cproto.NewCProto()))
 
 	gateServer = &Gate{
 		Addr:       "0.0.0.0",

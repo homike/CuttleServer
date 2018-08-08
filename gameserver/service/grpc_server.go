@@ -3,6 +3,7 @@ package service
 //go:generate protoc -I ../helloworld --go_out=plugins=grpc:../helloworld ../helloworld/helloworld.proto
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -24,7 +25,20 @@ type server struct{}
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	fmt.Println("say hello")
-	return &pb.HelloReply{AccountID: in.AccountID, MessageID: 2, Content: []byte("Hello")}, nil
+
+	sess, err := SessionMgr.GetSession(in.AccountID)
+	if err != nil {
+		sess, err = NewSession(in.AccountID)
+		if err != nil {
+			fmt.Println("NewSession() error")
+			return nil, errors.New("say hello error")
+		}
+		SessionMgr.AddSession(sess)
+	}
+
+	respID, byteMessage := sess.Handler(uint16(in.MessageID), in.Content)
+
+	return &pb.HelloReply{AccountID: sess.AccountID, MessageID: uint32(respID), Content: byteMessage}, nil
 }
 
 func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {

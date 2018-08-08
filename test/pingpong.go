@@ -200,6 +200,7 @@ func Read(bufReader *bufio.Reader) (uint16, []byte, error) {
 		log.Println("read body error")
 		return 0, nil, err
 	}
+	fmt.Println("id", msgID, "data", bodyData)
 
 	return msgID, bodyData, nil
 }

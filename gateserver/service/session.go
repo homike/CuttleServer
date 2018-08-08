@@ -39,7 +39,7 @@ func (self *Session) OnRecv(msgid uint16, msgdata []byte) {
 }
 
 func (self *Session) Send(msgid uint16, message interface{}) error {
-	byteMessage, err := proc.Marshal(message)
+	byteMessage, err := MessageHandlers.Proc.Marshal(message)
 	if err != nil {
 		return nil
 	}

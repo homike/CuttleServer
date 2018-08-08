@@ -54,7 +54,7 @@ func (self *GameServer) DialGRPC() {
 	for {
 		select {
 		case t := <-self.tasks:
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute/2)
 			defer cancel()
 
 			r, err := c.SayHello(ctx, &pb.HelloRequest{AccountID: t.AccountID, MessageID: t.MessageID, Content: t.Content})
