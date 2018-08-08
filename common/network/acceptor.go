@@ -8,27 +8,25 @@ import (
 )
 
 type Acceptor struct {
-	IP           string
-	Port         int
-	Listener     net.Listener
-	MsgParser    *MsgParser
-	MsgProcessor MsgProcessor
+	IP        string
+	Port      int
+	Listener  net.Listener
+	MsgParser *MsgParser
 	SocketOption
 
 	// constructor
 	NewAgent func(sess *Session) SessionInterface
 }
 
-func NewAcceptor(addr string, port int, p *MsgParser, proc MsgProcessor) (*Acceptor, error) {
-	if p == nil || proc == nil {
+func NewAcceptor(addr string, port int, parser *MsgParser) (*Acceptor, error) {
+	if parser == nil {
 		return nil, errors.New("nil pointer")
 	}
 
 	return &Acceptor{
-		IP:           addr,
-		Port:         port,
-		MsgParser:    p,
-		MsgProcessor: proc,
+		IP:        addr,
+		Port:      port,
+		MsgParser: parser,
 	}, nil
 }
 
@@ -61,7 +59,7 @@ func (self *Acceptor) Accept() error {
 func (self *Acceptor) OnAccept(conn net.Conn) error {
 	defer conn.Close()
 
-	sess, err := NewSession(conn, self.MsgParser, self.MsgProcessor)
+	sess, err := NewSession(conn, self.MsgParser)
 	if err != nil {
 		return err
 	}
@@ -85,6 +83,9 @@ func isEOFOrNetReadError(err error) bool {
 }
 
 func (self *Acceptor) Run(sess SessionInterface) {
+
+	sess.OnEstablish()
+
 	for sess.ConnectAvailable() {
 		msgid, msgdata, err := sess.ReadMessage()
 		if err != nil {

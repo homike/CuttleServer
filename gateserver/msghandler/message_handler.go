@@ -1,8 +1,8 @@
 package msghandler
 
 import (
-	"cuttleserver/common/network/cproto"
-	"cuttleserver/gateserver/agent"
+	"cuttleserver/gateserver/service"
+	"fmt"
 	"reflect"
 )
 
@@ -18,25 +18,24 @@ const (
 type Ping struct {
 	Value int32
 }
+
 type Pong struct {
 	Value int32
 }
 
-func NewMsgProcessor() (*cproto.CProto, error) {
-	proto := cproto.NewCProto()
-
-	proto.SetHandler(Protocol_Ping, cproto.MsgInfo{MsgType: reflect.TypeOf(&Ping{}), MsgHandler: TestReqProcess})
-
-	return proto, nil
+func Init() error {
+	service.RegisterHandler(Protocol_Ping, service.MsgInfo{reflect.TypeOf(&Ping{}), TestReqProcess})
+	return nil
 }
 
 func TestReqProcess(args []interface{}) {
 	req := args[0].(*Ping)
-	agent := args[1].(*agent.Agent)
+	sess := args[1].(*service.Session)
 
 	resp := &Pong{
 		Value: req.Value + 1,
 	}
-	agent.Send(Protocol_Pong, resp)
-	//fmt.Println("args ", req.Value, "Token", agent.Token)
+
+	sess.Send(Protocol_Pong, resp)
+	fmt.Println("req", req.Value)
 }

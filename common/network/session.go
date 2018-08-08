@@ -20,16 +20,14 @@ type Session struct {
 	Conn      net.Conn
 	WriteChan chan []byte
 
-	MsgParser    *MsgParser
-	MsgProcessor MsgProcessor
+	MsgParser *MsgParser
 }
 
-func NewSession(conn net.Conn, parser *MsgParser, proc MsgProcessor) (*Session, error) {
+func NewSession(conn net.Conn, parser *MsgParser) (*Session, error) {
 	sess := &Session{
-		Conn:         conn,
-		WriteChan:    make(chan []byte, 128),
-		MsgParser:    parser,
-		MsgProcessor: proc,
+		Conn:      conn,
+		WriteChan: make(chan []byte, 128),
+		MsgParser: parser,
 	}
 
 	go sess.sendLoop()
@@ -50,12 +48,8 @@ func (self *Session) sendLoop() {
 	}
 }
 
-func (self *Session) WriteMessage(msgid uint16, message interface{}) error {
-	byteMessage, err := self.MsgProcessor.Marshal(message)
-	if err != nil {
-		return err
-	}
-	data, err := self.MsgParser.Pack(msgid, byteMessage)
+func (self *Session) WriteMessage(msgid uint16, message []byte) error {
+	data, err := self.MsgParser.Pack(msgid, message)
 	if err != nil {
 		return err
 	}

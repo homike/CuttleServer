@@ -1,17 +1,15 @@
 package main
 
 import (
+	"cuttleserver/gateserver/msghandler"
 	"cuttleserver/gateserver/service"
 )
 
 func main() {
-	gateServer := &service.Gate{
-		Addr:       "0.0.0.0",
-		Port:       9110,
-		IsLittle:   true,
-		MsgHeadLen: 6,
-	}
+	service.Init()
+
+	msghandler.Init()
 
 	close := make(chan bool)
-	gateServer.Run(close)
+	service.Run(close)
 }

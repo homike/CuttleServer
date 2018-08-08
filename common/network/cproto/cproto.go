@@ -3,7 +3,6 @@ package cproto
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"reflect"
 )
@@ -15,22 +14,13 @@ const (
 )
 
 type CProto struct {
-	mapHandlers map[uint16]MsgInfo
-}
-
-type MsgHandler func([]interface{})
-
-type MsgInfo struct {
-	MsgType    reflect.Type
-	MsgHandler MsgHandler
 }
 
 func NewCProto() *CProto {
-	return &CProto{
-		mapHandlers: make(map[uint16]MsgInfo),
-	}
+	return &CProto{}
 }
 
+/*
 func (self *CProto) SetHandler(msgID uint16, msgInfo MsgInfo) error {
 	_, ok := self.mapHandlers[msgID]
 	if ok {
@@ -62,6 +52,7 @@ func (self *CProto) Route(msgID uint16, msgBody []byte, userData interface{}) in
 
 	return CPROTORET_OK
 }
+*/
 
 // gorutine safe
 func (p *CProto) UnMarshal(msgBody []byte, msgStruct interface{}) error {

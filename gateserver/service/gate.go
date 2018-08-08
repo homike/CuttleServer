@@ -2,8 +2,7 @@ package service
 
 import (
 	"cuttleserver/common/network"
-	"cuttleserver/gateserver/agent"
-	"cuttleserver/gateserver/msghandler"
+	"cuttleserver/common/network/cproto"
 	"fmt"
 )
 
@@ -16,29 +15,43 @@ type Gate struct {
 	Acceptor *network.Acceptor
 }
 
-func (self *Gate) Run(close chan bool) error {
-	agent.InitAgentManager()
+var messageHandlers *MessageHandlers
+var proc network.MsgProcessor
+var gateServer *Gate
+var gameServer1 *GameServer
+var sessionManager *SessionManager
 
+func Init() {
+	messageHandlers = NewMessageHandlers()
+
+	proc = network.MsgProcessor(cproto.NewCProto())
+
+	gateServer = &Gate{
+		Addr:       "0.0.0.0",
+		Port:       9110,
+		IsLittle:   true,
+		MsgHeadLen: 4,
+	}
+
+	gameServer1 = NewGameServer()
+
+	sessionManager = NewSessionManager()
+}
+
+func Run(close chan bool) error {
+	StartGateWatch()
 	// parser
-	parser := network.NewMsgParser(self.MsgHeadLen, self.IsLittle)
-
-	// processor
-	cprotoProc, err := msghandler.NewMsgProcessor()
-	if err != nil {
-		return err
-	}
-	proc := network.MsgProcessor(cprotoProc)
-
+	parser := network.NewMsgParserWithOption(gateServer.MsgHeadLen, gateServer.IsLittle)
 	// acceptor
-	acceptor, err := network.NewAcceptor(self.Addr, self.Port, parser, proc)
+	acceptor, err := network.NewAcceptor(gateServer.Addr, gateServer.Port, parser)
 	if err != nil {
 		return err
 	}
-	acceptor.NewAgent = func(sess *network.Session) network.SessionInterface {
-		agent := &agent.Agent{Session: *sess}
-		return agent
+	acceptor.NewAgent = func(socketSess *network.Session) network.SessionInterface {
+		sess := &Session{Session: *socketSess}
+		return sess
 	}
-	fmt.Println("[GateServer] Start, Listen", self.Addr, self.Port)
+	fmt.Println("[GateServer] Start, Listen", gateServer.Addr, gateServer.Port)
 	acceptor.Start()
 
 	<-close

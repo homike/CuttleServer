@@ -1,4 +1,4 @@
-package agent
+package service
 
 import (
 	"fmt"
@@ -6,9 +6,6 @@ import (
 	"sync"
 	"time"
 )
-
-type AgentManager struct {
-}
 
 var (
 	RequestCount     int
@@ -22,7 +19,7 @@ const (
 	GLOBAL_TIMER = 5
 )
 
-func InitAgentManager() {
+func StartGateWatch() {
 	RequestCount = 0
 	LastRequestCount = 0
 	CurrentQPS = 0

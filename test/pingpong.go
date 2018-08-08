@@ -132,13 +132,13 @@ func DoTest(robots chan *Robot) {
 }
 
 func DoTest2() {
-	connCnt := 2000
+	connCnt := 1
 	var count sync.WaitGroup
 	count.Add(connCnt)
 
 	for i := 0; i < connCnt; i++ {
 		go func() {
-			conn, err := net.Dial("tcp", "172.17.0.4:9110")
+			conn, err := net.Dial("tcp", "127.0.0.1:9110")
 			if err != nil {
 				fmt.Println("connect error", err.Error())
 				return
