@@ -1,8 +1,8 @@
 package service
 
 import (
+	"io"
 	"log"
-	"os"
 	"time"
 
 	pb "cuttleserver/common/proto"
@@ -23,18 +23,80 @@ type Tasks struct {
 }
 
 type GameServer struct {
-	tasks chan *Tasks
+	GSStreamer pb.Stream_ForwardClient
+	tasks      chan *Tasks
 }
 
 func NewGameServer() *GameServer {
 	gs := &GameServer{
 		tasks: make(chan *Tasks),
 	}
-	go gs.DialGRPC()
+
+	gs.initClient()
+
+	go gs.Recv()
+	go gs.Send()
 
 	return gs
 }
 
+func (self *GameServer) initClient() {
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+
+	stream := pb.NewStreamClient(conn)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute/2)
+	defer cancel()
+
+	self.GSStreamer, err = stream.Forward(ctx)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+}
+
+func (self *GameServer) Send() {
+	for {
+		select {
+		case t := <-self.tasks:
+			err := self.GSStreamer.Send(&pb.RPCRequest{AccountID: t.AccountID, MessageID: t.MessageID, MessageBody: t.Content})
+			if err != nil {
+				if err == io.EOF {
+					log.Fatalf("GameServer Exit: %v", err)
+				}
+				log.Fatalf("send message error: %v", err)
+			}
+		}
+	}
+}
+
+func (self *GameServer) Recv() {
+	for {
+		r, err := self.GSStreamer.Recv()
+		if err != nil {
+			if err == io.EOF {
+				log.Fatalf("GameServer Exit: %v", err)
+			}
+			log.Fatalf("recv message error: %v", err)
+		}
+
+		log.Printf("Resp Message %v, %v, %v", r.AccountID, r.MessageID, r.MessageBody)
+		sess, err := sessionManager.GetSession(r.AccountID)
+		if err != nil {
+			log.Fatalf("could not find session : %v", r.AccountID)
+			break
+		}
+		sess.WriteMessage(uint16(r.MessageID), r.MessageBody)
+	}
+}
+
+/*
 func (self *GameServer) DialGRPC() {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -42,14 +104,8 @@ func (self *GameServer) DialGRPC() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
 
-	// Contact the server and print out its response.
-	name := defaultName
-	if len(os.Args) > 1 {
-		name = os.Args[1]
-	}
-	_ = name
+	c := pb.NewGreeterClient(conn)
 
 	for {
 		select {
@@ -72,3 +128,4 @@ func (self *GameServer) DialGRPC() {
 		}
 	}
 }
+*/
