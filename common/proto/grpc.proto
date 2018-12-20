@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package proto;
+
+service Stream {
+  rpc Forward(stream RPCRequest) returns (stream RPCReply) {}
+}
+
+message RPCRequest {
+  uint32 accountID   = 1;
+  uint32 messageID   = 2;
+  bytes  messageBody = 3;
+}
+
+message RPCReply {
+  uint32 accountID   = 1;
+  uint32 messageID   = 2;
+  bytes  messageBody = 3;
+}
