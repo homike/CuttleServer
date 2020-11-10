@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cuttleserver/loginserver/login"
 	"fmt"
 	"net/http"
 	"os"
@@ -31,7 +30,7 @@ func main() {
 
 func regHandler() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/Login/Api/Fishluv", login.FishluvLogin)
+	mux.HandleFunc("/Login/Api/Fishluv", nil)
 
 	return mux
 }
