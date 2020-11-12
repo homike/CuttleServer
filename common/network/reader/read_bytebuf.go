@@ -2,23 +2,21 @@ package reader
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"log"
 	"strconv"
 )
 
 type ByteBuf struct {
 	reader  io.Reader
-	buf     *bytes.Buffer
 	readbuf []byte
+	databuf *bytes.Buffer
 	size    int // last packet length
 }
 
 func NewByteBuf(r io.Reader) *ByteBuf {
 	b := &ByteBuf{
 		reader:  r,
-		buf:     bytes.NewBuffer(nil),
+		databuf: bytes.NewBuffer(nil),
 		readbuf: make([]byte, 1024),
 		size:    -1,
 	}
@@ -26,7 +24,7 @@ func NewByteBuf(r io.Reader) *ByteBuf {
 }
 
 func (b *ByteBuf) header() error {
-	header := b.buf.Next(HEADER_SIZE)
+	header := b.databuf.Next(HEADER_SIZE)
 	size, err := strconv.Atoi(string(header))
 	if err != nil {
 		return err
@@ -35,17 +33,21 @@ func (b *ByteBuf) header() error {
 	return nil
 }
 
+func (b *ByteBuf) Reset() {
+	b.databuf = bytes.NewBuffer(nil)
+	b.size = -1
+}
+
 func (b *ByteBuf) Read() ([][]byte, error) {
 	n, err := b.reader.Read(b.readbuf)
 	if err != nil {
-		log.Println(fmt.Sprintf("Read message error: %v", err))
 		return nil, err
 	}
 
-	b.buf.Write(b.readbuf[:n])
+	b.databuf.Write(b.readbuf[:n])
 
 	// check length
-	if b.buf.Len() < HEADER_SIZE {
+	if b.databuf.Len() < HEADER_SIZE {
 		return nil, err
 	}
 
@@ -57,11 +59,11 @@ func (b *ByteBuf) Read() ([][]byte, error) {
 	}
 
 	arrData := [][]byte{}
-	for b.size <= b.buf.Len() {
-		arrData = append(arrData, b.buf.Next(b.size))
+	for b.size <= b.databuf.Len() {
+		arrData = append(arrData, b.databuf.Next(b.size))
 
 		// more packet
-		if b.buf.Len() < HEADER_SIZE {
+		if b.databuf.Len() < HEADER_SIZE {
 			b.size = -1
 			break
 		}

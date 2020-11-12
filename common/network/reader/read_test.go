@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func _BenchmarkRead_BufIO(b *testing.B) {
+func BenchmarkRead_BufIO(b *testing.B) {
 	b.StopTimer()
 
 	f, err := os.Open("data")
@@ -48,15 +48,17 @@ func BenchmarkRead_ByteBuf(b *testing.B) {
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := buf.Read()
+		_, err = buf.Read()
 		if err != nil {
 			panic(err)
 		}
+
+		buf.Reset()
 		syscall.Seek(int(f.Fd()), 0, 0)
 	}
 }
 
-func _BenchmarkRead_ReadFull(b *testing.B) {
+func BenchmarkRead_ReadFull(b *testing.B) {
 	b.StopTimer()
 
 	f, err := os.Open("data")
@@ -82,7 +84,7 @@ func _BenchmarkRead_ReadFull(b *testing.B) {
 	}
 }
 
-func TestRead(t *testing.T) {
+func _TestRead(t *testing.T) {
 	{
 		f, err := os.Open("data")
 		if err != nil {
