@@ -102,7 +102,6 @@ func (p *CProto) UnMarshal(msgBody []byte, msgStruct interface{}) error {
 
 // Gorutine safe
 func (self *CProto) Marshal(msgStruct interface{}) ([]byte, error) {
-
 	bytesBuffer := bytes.NewBuffer([]byte{})
 
 	v := reflect.ValueOf(msgStruct).Elem()
